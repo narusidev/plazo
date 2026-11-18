@@ -1,0 +1,71 @@
+name: Compilar y publicar Plazo
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  compilar:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Pruebas con el campus simulado
+        run: python -m unittest discover -s pruebas -v
+
+      - name: Leer versión
+        id: version
+        shell: bash
+        run: echo "valor=$(python -c 'import version; print(version.VERSION)')" >> "$GITHUB_OUTPUT"
+
+      - name: ¿Ya está publicada?
+        id: existe
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view "v${{ steps.version.outputs.valor }}" > /dev/null 2>&1; then
+            echo "si=1" >> "$GITHUB_OUTPUT"
+          else
+            echo "si=0" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Instalar dependencias
+        if: steps.existe.outputs.si == '0'
+        run: python -m pip install -r requirements.txt pyinstaller
+
+      - name: Compilar Plazo.exe
+        if: steps.existe.outputs.si == '0'
+        run: >
+          python -m PyInstaller --noconfirm --clean --onefile --windowed
+          --name Plazo --icon plazo.ico --add-data "ui;ui"
+          --collect-all webview --collect-all clr_loader --collect-all pythonnet
+          plazo.py
+
+      - name: Autoprueba del .exe
+        if: steps.existe.outputs.si == '0'
+        shell: pwsh
+        run: |
+          $salida = Join-Path $env:RUNNER_TEMP "autoprueba.txt"
+          $env:PLAZO_DATA = Join-Path $env:RUNNER_TEMP "plazo-datos"
+          Start-Process -FilePath "dist\Plazo.exe" -ArgumentList "--autoprueba", "`"$salida`"" -Wait
+          $texto = Get-Content $salida -Raw
+          Write-Output $texto
+          if ($texto.Trim() -ne "ok") { exit 1 }
+
+      - name: Publicar Release
+        if: steps.existe.outputs.si == '0'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          V="${{ steps.version.outputs.valor }}"
+          gh release create "v$V" dist/Plazo.exe --title "Plazo $V" --notes-file NOVEDADES.md
