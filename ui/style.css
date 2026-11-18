@@ -1,0 +1,174 @@
+/* Plazo: una agenda corregida a mano. Papel reciclado, tinta verde, fosforito y boli rojo. */
+:root {
+  --papel: #E9EDE6;
+  --hoja: #F4F6F1;
+  --tinta: #1D2B24;
+  --gris: #5F6B64;
+  --linea: #C9D1C8;
+  --finde: #DDE3DA;
+  --fosforito: #F1DE3A;
+  --boli: #C1121F;
+  --hecho: #8A958E;
+  --letra: "Bahnschrift", "DIN Alternate", "Barlow", "Segoe UI", system-ui, sans-serif;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--papel); color: var(--tinta); }
+body { font: 400 15px/1.5 var(--letra); -webkit-font-smoothing: antialiased; }
+button, input { font: inherit; color: inherit; }
+a { color: inherit; }
+:focus-visible { outline: 2px solid var(--tinta); outline-offset: 3px; }
+s { text-decoration-color: var(--boli); text-decoration-thickness: 2px; }
+
+/* ---------- cabecera ---------- */
+.cabecera {
+  display: flex; align-items: flex-end; gap: 40px; flex-wrap: wrap;
+  padding: 26px 48px 0; border-bottom: 1px solid var(--linea);
+}
+.marca { font-weight: 700; font-stretch: 75%; font-size: 30px; line-height: 1; padding-bottom: 14px; letter-spacing: -.01em; }
+.nav { display: flex; gap: 26px; flex: 1; }
+.nav button {
+  background: none; border: 0; padding: 0 0 14px; cursor: pointer; color: var(--gris);
+  border-bottom: 3px solid transparent; font-weight: 600;
+}
+.nav button:hover { color: var(--tinta); }
+.nav button[aria-current="page"] { color: var(--tinta); border-bottom-color: var(--tinta); }
+.nav .cuenta-cambios { color: var(--boli); font-weight: 700; margin-left: 4px; }
+.estado { display: flex; align-items: center; gap: 14px; padding-bottom: 10px; color: var(--gris); font-size: 13px; }
+
+.boton {
+  background: var(--tinta); color: var(--hoja); border: 0; border-radius: 3px;
+  padding: 8px 16px; font-weight: 600; cursor: pointer;
+}
+.boton:hover { background: #2E4237; }
+.boton[disabled] { opacity: .55; cursor: default; }
+.boton.suave { background: transparent; color: var(--tinta); box-shadow: inset 0 0 0 1.5px var(--tinta); }
+.boton.suave:hover { background: var(--finde); }
+.boton.peligro { background: transparent; color: var(--boli); box-shadow: inset 0 0 0 1.5px var(--boli); }
+.enlace { background: none; border: 0; padding: 0; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; color: var(--gris); }
+.enlace:hover { color: var(--tinta); }
+
+.error { margin: 0; padding: 10px 48px; background: var(--boli); color: #fff; font-weight: 600; }
+
+main { max-width: 1040px; padding: 0 48px 80px; }
+
+/* ---------- correcciones (cambios sin leer) ---------- */
+.correcciones { margin: 28px 0 0; padding: 18px 22px; background: var(--hoja); border-left: 4px solid var(--boli); }
+.correcciones h2 { margin: 0 0 8px; font-size: 17px; color: var(--boli); }
+.correcciones ul { margin: 0 0 12px; padding: 0; list-style: none; }
+.correcciones li { padding: 3px 0; }
+.correcciones .acciones { display: flex; gap: 18px; align-items: center; }
+
+/* ---------- sesión caducada ---------- */
+.sesion { margin: 28px 0 0; padding: 16px 22px; background: var(--hoja); border-left: 4px solid var(--tinta);
+  display: flex; gap: 22px; align-items: center; justify-content: space-between; }
+.sesion p { margin: 0; }
+.sesion .boton { flex: none; }
+
+/* ---------- lo próximo ---------- */
+.proximo { margin: 40px 0 0; max-width: 860px; font-size: 30px; line-height: 1.25; font-weight: 400; letter-spacing: -.005em; }
+.proximo b { font-weight: 700; }
+.proximo .quedan { white-space: nowrap; }
+.proximo .quedan.urgente, .resta.urgente {
+  background: linear-gradient(transparent 18%, var(--fosforito) 18%, var(--fosforito) 88%, transparent 88%);
+  padding: 0 .15em; margin: 0 -.05em;
+}
+.proximo .nada { color: var(--gris); }
+
+/* ---------- la regla de 28 días ---------- */
+.regla { margin: 34px 0 10px; }
+.regla-pines, .regla-dias { display: grid; grid-template-columns: repeat(28, 1fr); }
+.regla-pines { align-items: end; min-height: 74px; }
+.pin { display: flex; flex-direction: column; align-items: center; gap: 2px; grid-row: 1; padding-bottom: 0; }
+.pin button {
+  background: none; border: 0; padding: 0 2px; cursor: pointer;
+  font-weight: 700; font-stretch: 75%; font-size: 13px; line-height: 1.15;
+}
+.pin button.urgente { background: var(--fosforito); }
+.pin button.fantasma { color: var(--boli); opacity: .75; text-decoration: line-through 2px; }
+.pin::after { content: ""; width: 2px; height: 14px; background: var(--tinta); }
+.pin.fantasma::after { background: var(--boli); opacity: .5; }
+.regla-dias { border-top: 2px solid var(--tinta); }
+.dia {
+  position: relative; text-align: center; font-size: 11px; color: var(--gris);
+  padding-top: 8px; font-variant-numeric: tabular-nums; font-stretch: 85%;
+}
+.dia::before { content: ""; position: absolute; left: 50%; top: 0; width: 1px; height: 5px; background: var(--tinta); }
+.dia.finde { background: var(--finde); }
+.dia.hoy { color: var(--tinta); font-weight: 700; }
+.dia.hoy::before { width: 2px; height: 9px; }
+.dia .mes { display: block; color: var(--tinta); font-weight: 600; }
+.leyenda { margin: 6px 0 0; font-size: 12px; color: var(--gris); }
+
+/* ---------- listas ---------- */
+.grupo { margin-top: 42px; }
+.grupo h2 { margin: 0 0 4px; font-size: 19px; font-weight: 700; }
+.grupo .nota-grupo { margin: 0 0 6px; color: var(--gris); font-size: 13px; }
+.filas { list-style: none; margin: 0; padding: 0; }
+.fila {
+  display: grid; grid-template-columns: 64px 1fr auto; gap: 22px; align-items: center;
+  padding: 13px 0; border-bottom: 1px solid var(--linea);
+}
+.fila:target, .fila.resaltada { background: var(--hoja); }
+.fecha { text-align: center; line-height: 1; }
+.fecha .num { display: block; font-size: 32px; font-weight: 700; font-stretch: 75%; font-variant-numeric: tabular-nums; }
+.fecha .sem { display: block; font-size: 12px; color: var(--gris); margin-top: 3px; }
+.que { min-width: 0; }
+.que .titulo { font-weight: 600; font-size: 16px; text-decoration: none; }
+.que a.titulo:hover { text-decoration: underline; text-underline-offset: 3px; }
+.que .mod { display: block; color: var(--gris); font-size: 13px; }
+.que .corregido { display: block; font-size: 13px; color: var(--boli); }
+.cuando { text-align: right; line-height: 1.2; white-space: nowrap; }
+.cuando .sigla { display: block; font-weight: 700; font-stretch: 75%; font-size: 15px; }
+.cuando .resta { font-weight: 600; }
+.cuando .hora { display: block; color: var(--gris); font-size: 12px; }
+.fila.pasada .fecha .num, .fila.pasada .resta { color: var(--boli); }
+.fila.hecha .titulo { color: var(--hecho); }
+.vacio { color: var(--gris); margin: 36px 0 0; font-size: 17px; }
+
+/* ---------- notas ---------- */
+.modulo { margin-top: 36px; }
+.modulo-cab { display: flex; align-items: baseline; gap: 14px; border-bottom: 2px solid var(--tinta); padding-bottom: 6px; }
+.modulo-cab .sigla { font-weight: 700; font-stretch: 75%; font-size: 26px; min-width: 70px; }
+.modulo-cab .nombre { flex: 1; color: var(--gris); }
+.modulo-cab .global { font-weight: 700; font-size: 18px; }
+.calif { display: grid; grid-template-columns: 1fr auto; gap: 16px; padding: 9px 0; border-bottom: 1px solid var(--linea); }
+.calif .valor { font-weight: 700; font-variant-numeric: tabular-nums; }
+.calif .pendiente { color: var(--gris); font-weight: 400; }
+
+/* ---------- ajustes ---------- */
+.ajustes { max-width: 640px; }
+.ajustes section { margin-top: 34px; }
+.ajustes h2 { font-size: 19px; margin: 0 0 6px; }
+.ajustes p { margin: 0 0 12px; color: var(--gris); }
+.ajustes label { display: block; font-weight: 600; margin-bottom: 6px; }
+.campo { display: flex; gap: 10px; }
+.campo input[type=url] {
+  flex: 1; padding: 8px 10px; border: 1.5px solid var(--tinta); border-radius: 3px; background: var(--hoja);
+}
+.check { display: flex; gap: 10px; align-items: center; font-weight: 600; }
+.check input { width: 18px; height: 18px; accent-color: var(--tinta); }
+.ruta { font-size: 13px; background: var(--hoja); padding: 6px 10px; display: inline-block; word-break: break-all; }
+.fila-botones { display: flex; gap: 12px; flex-wrap: wrap; }
+
+/* ---------- conexión ---------- */
+.conexion { max-width: 620px; margin: 0 auto; padding: 14vh 32px 60px; }
+.conexion .marca { font-size: 72px; padding: 0 0 18px; }
+.conexion p { font-size: 18px; margin: 0 0 22px; }
+.conexion .ayuda { font-size: 14px; color: var(--gris); }
+.conexion .boton { font-size: 16px; padding: 11px 22px; margin-bottom: 18px; }
+.caido { padding: 20vh 48px; font-size: 18px; }
+
+@media (max-width: 760px) {
+  .cabecera { padding: 18px 20px 0; gap: 16px; }
+  main { padding: 0 20px 60px; }
+  .proximo { font-size: 23px; }
+  .regla-pines, .regla-dias { grid-template-columns: repeat(14, 1fr); }
+  .dia:nth-child(n+15) { display: none; }
+  .fila { grid-template-columns: 50px 1fr; }
+  .cuando { grid-column: 2; text-align: left; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .proximo .quedan.urgente { animation: subrayar .7s ease-out .2s both; background-size: 100% 100%; background-repeat: no-repeat; }
+  @keyframes subrayar { from { background-size: 0% 100%; } to { background-size: 100% 100%; } }
+}
